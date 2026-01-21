@@ -1,0 +1,3 @@
+/* Minimal fallback styles; the project uses Tailwind, so this is a tiny companion file.
+   Keep this file in case the presentation environment lacks Tailwind at runtime. */
+.login-fallback { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }

@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gradient-to-b from-green-100 to-white text-gray-900;
+  font-family: 'Poppins', sans-serif;
+}
+
+table {
+  @apply border-collapse w-full text-sm text-gray-800;
+}
+
+th, td {
+  @apply border border-green-200 px-3 py-2 text-center;
+}
+
+th {
+  @apply bg-green-700 text-white text-base;
+}
