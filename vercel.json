@@ -10,6 +10,14 @@
       "destination": "/bioIntelXData_perfect.json"
     },
     {
+      "source": "/cultureBankData.json",
+      "destination": "/cultureBankData.json"
+    },
+    {
+      "source": "/data/cultureBankData.json",
+      "destination": "/cultureBankData.json"
+    },
+    {
       "source": "/assets/(.*)",
       "destination": "/assets/$1"
     },
@@ -20,7 +28,7 @@
   ],
   "headers": [
     {
-      "source": "/bioIntelXData_perfect.json",
+      "source": "/(.*\\.json)",
       "headers": [
         {
           "key": "Cache-Control",

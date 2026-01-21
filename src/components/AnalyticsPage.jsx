@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import FilterBar from "./FilterBar";
-import cultureData from "../../data/cultureBankData.json";
 import SpeciesPie from "./Charts/SpeciesPie";
 import LocationBar from "./Charts/LocationBar";
 import EnzymeBar from "./Charts/EnzymeBar";
@@ -14,10 +13,22 @@ export default function AnalyticsPage() {
   const [filteredData, setFilteredData] = useState([]);
   const [search, setSearch] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setData(cultureData);
-    setFilteredData(cultureData);
+    const loadData = async () => {
+      try {
+        const response = await fetch("/cultureBankData.json");
+        const cultureData = await response.json();
+        setData(cultureData);
+        setFilteredData(cultureData);
+      } catch (error) {
+        console.error("Error loading data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   useEffect(() => {

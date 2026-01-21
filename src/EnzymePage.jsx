@@ -24,7 +24,7 @@ export default function EnzymePage() {
   };
 
   useEffect(() => {
-    fetch("../data/cultureBankData.json")
+    fetch("/cultureBankData.json")
       .then((response) => response.json())
       .then((cultureData) => {
         setData(cultureData);

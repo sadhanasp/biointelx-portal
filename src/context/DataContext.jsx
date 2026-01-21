@@ -39,7 +39,7 @@ export function DataProvider({ children }) {
         localStorage.setItem('cultureBankData', JSON.stringify(migratedData));
       } else {
         // If no localStorage data, load from JSON file
-        const response = await fetch('../data/cultureBankData.json');
+        const response = await fetch('/cultureBankData.json');
         const jsonData = await response.json();
         const migratedData = migrateData(jsonData);
         setData(migratedData);
@@ -109,7 +109,7 @@ export function DataProvider({ children }) {
   // Reset data to original JSON file
   const resetData = async () => {
     try {
-      const response = await fetch('../data/cultureBankData.json');
+      const response = await fetch('/cultureBankData.json');
       const jsonData = await response.json();
       saveData(jsonData);
       return { success: true };
