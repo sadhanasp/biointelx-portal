@@ -4,26 +4,26 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "vite",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/bioIntelXData_perfect.json",
-      "destination": "/bioIntelXData_perfect.json"
+      "src": "/bioIntelXData_perfect.json",
+      "dest": "/bioIntelXData_perfect.json"
     },
     {
-      "source": "/cultureBankData.json",
-      "destination": "/cultureBankData.json"
+      "src": "/cultureBankData.json",
+      "dest": "/cultureBankData.json"
     },
     {
-      "source": "/data/cultureBankData.json",
-      "destination": "/cultureBankData.json"
+      "src": "/data/cultureBankData.json",
+      "dest": "/cultureBankData.json"
     },
     {
-      "source": "/assets/(.*)",
-      "destination": "/assets/$1"
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "headers": [
@@ -48,8 +48,23 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }
