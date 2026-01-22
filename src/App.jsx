@@ -141,7 +141,7 @@ export default function App() {
           <img src={logo} alt="BioIntelX" className="h-19 w-11.5 object-contain self-end" />
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 gap-8 max-w-7xl mx-auto">
           <SpeciesPie data={filteredData} />
           <LocationBar data={filteredData} />
           <RiskGroupPie data={filteredData} />
