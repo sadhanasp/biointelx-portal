@@ -41,61 +41,72 @@ const InputField = ({ label, name, value, onChange, mode, type = 'text', require
   </div>
 );
 
-const ConditionalInputField = ({ label, name, yesNoName, formData, setFormData, handleChange, options = null, quantityLabel = "Quantity" }) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">
-      {label}
-    </label>
-    <div className="flex gap-2 items-end">
-      <div className="flex-1">
-        <select
-          name={yesNoName}
-          value={formData[yesNoName] || ""}
-          onChange={(e) => {
-            const value = e.target.value;
-            setFormData(prev => ({
-              ...prev,
-              [yesNoName]: value,
-              [name]: value === 'No' ? 'No' : (prev[name] === 'No' ? '' : prev[name])
-            }));
-          }}
-          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-        >
-          <option value="">Select...</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      {formData[yesNoName] === 'Yes' && (
+// New ActivityField component for standardized Yes/No + Zone of Inhibition workflow
+const ActivityField = ({ label, name, zoneName, formData, setFormData, required = false }) => {
+  const activityStatus = formData[name] || '';
+  const zoneValue = formData[zoneName] || '';
+
+  const handleStatusChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+      [zoneName]: value === 'NO' ? null : prev[zoneName]
+    }));
+  };
+
+  const handleZoneChange = (e) => {
+    const value = e.target.value;
+    // Allow only positive numbers with decimals
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setFormData(prev => ({
+        ...prev,
+        [zoneName]: value
+      }));
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label} {required && '*'}
+      </label>
+      <div className="flex gap-2 items-start">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {quantityLabel}
-          </label>
-          {options ? (
-            <select
-              name={name}
-              value={formData[name] || ''}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
-              <option value="">Select...</option>
-              {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-            </select>
-          ) : (
-            <input
-              type="text"
-              name={name}
-              value={formData[name] || ''}
-              onChange={handleChange}
-              placeholder={`Enter ${quantityLabel.toLowerCase()}`}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-          )}
+          <select
+            name={name}
+            value={activityStatus}
+            onChange={handleStatusChange}
+            required={required}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          >
+            <option value="">Select...</option>
+            <option value="YES">Yes</option>
+            <option value="NO">No</option>
+          </select>
         </div>
-      )}
+        {activityStatus === 'YES' && (
+          <div className="flex-1">
+            <div className="relative">
+              <input
+                type="text"
+                name={zoneName}
+                value={zoneValue}
+                onChange={handleZoneChange}
+                placeholder="Zone of inhibition"
+                required={activityStatus === 'YES'}
+                className="w-full px-3 py-2 pr-12 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                mm
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const CustomFieldsSection = memo(({ tabId, customFields = {}, onAdd, onChange, onRemove }) => {
   const hasCustomFields = Object.keys(customFields).length > 0;
@@ -169,19 +180,41 @@ export default function RecordForm({ isOpen, onClose, onSubmit, initialData, mod
     microscopy: '', antagonisticActivity: '', enzymeActivity: '', nutrientActivity: '',
     dateOfCollection: '', locationCoordinates: '', sequenceData: '', characterizedOrganism: '',
     image: '', shape: '', colour: '', gramNature: '', sporeFormation: '', catalase: '', oxidase: '',
-    nitrateReduction: '', saltTolerance: '', pHRange: '', phosphateSolubilization: '',
-    potassiumSolubilization: '', nitrogenFixation: '', zincSolubilization: '', ironMobilization: '',
-    sulphurOxidation: '', silicateSolubilization: '', iaaProduction: '', ga3Production: '',
-    cytokininProduction: '', accDeaminaseActivity: '', ammoniaProduction: '', rosScavenging: '',
-    droughtTolerance: '', antifungalActivity: '', antibacterialActivity: '', chitinase: '',
-    glucanase: '', cellulase: '', vocProduction: '', biofilmFormation: '', eps: '', amylase: '',
-    protease: '', lipase: '', phytase: '', wholeGenomeSequencing: '', metaboliteExtraction: '',
+    nitrateReduction: '', saltTolerance: '', pHRange: '', 
+    // PGPR Activities
+    phosphateSolubilization: '', phosphateSolubilizationZone: '',
+    potassiumSolubilization: '', potassiumSolubilizationZone: '',
+    nitrogenFixation: '', nitrogenFixationZone: '',
+    zincSolubilization: '', zincSolubilizationZone: '',
+    ironMobilization: '', ironMobilizationZone: '',
+    sulphurOxidation: '', sulphurOxidationZone: '',
+    silicateSolubilization: '', silicateSolubilizationZone: '',
+    iaaProduction: '', iaaProductionZone: '',
+    ga3Production: '', ga3ProductionZone: '',
+    cytokininProduction: '', cytokininProductionZone: '',
+    accDeaminaseActivity: '', accDeaminaseActivityZone: '',
+    ammoniaProduction: '', ammoniaProductionZone: '',
+    rosScavenging: '', rosScavengingZone: '',
+    saltDroughtTolerance: '', saltDroughtToleranceZone: '',
+    // Antagonistic Activities
+    antifungalActivity: '', antifungalActivityZone: '',
+    antibacterialActivity: '', antibacterialActivityZone: '',
+    // Enzyme Activities
+    chitinase: '', chitinaseZone: '',
+    glucanase: '', glucanaseZone: '',
+    cellulase: '', cellulaseZone: '',
+    amylase: '', amylaseZone: '',
+    protease: '', proteaseZone: '',
+    lipase: '', lipaseZone: '',
+    phytase: '', phytaseZone: '',
+    // Other Activities
+    vocProduction: '', vocProductionZone: '',
+    biofilmFormation: '', biofilmFormationZone: '',
+    eps: '', epsZone: '',
+    // Other fields
+    droughtTolerance: '', wholeGenomeSequencing: '', metaboliteExtraction: '',
     uvSpectroscopy: '', hplc: '', gcmsLcms: '', bioagents: '', fertilizer: '', pesticide: '',
     ncbi: '', nbaim: '', mtcc: '',
-    // Yes/No fields
-    iaaProductionYesNo: '', chitinaseYesNo: '', glucanaseYesNo: '', cellulaseYesNo: '',
-    amylaseYesNo: '', proteaseYesNo: '', lipaseYesNo: '', phytaseYesNo: '',
-    vocProductionYesNo: '', biofilmFormationYesNo: '', epsYesNo: '',
     customFields: {
       basic: {},
       morphological: {},
@@ -428,20 +461,20 @@ export default function RecordForm({ isOpen, onClose, onSubmit, initialData, mod
             {activeTab === 'pgpr' && (
               <div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InputField label="Phosphate Solubilization" name="phosphateSolubilization" value={formData.phosphateSolubilization} onChange={handleChange} mode={mode} options={['+', '-']} />
-                  <InputField label="Potassium Solubilization" name="potassiumSolubilization" value={formData.potassiumSolubilization} onChange={handleChange} mode={mode} options={['+', '-']} />
-                  <InputField label="Nitrogen Fixation" name="nitrogenFixation" value={formData.nitrogenFixation} onChange={handleChange} mode={mode} options={['+', '-']} />
-                  <InputField label="Zinc Solubilization" name="zincSolubilization" value={formData.zincSolubilization} onChange={handleChange} mode={mode} options={['+', '-']} />
-                  <InputField label="Iron Mobilization" name="ironMobilization" value={formData.ironMobilization} onChange={handleChange} mode={mode} options={['+', '-']} />
-                  <InputField label="Sulphur Oxidation" name="sulphurOxidation" value={formData.sulphurOxidation} onChange={handleChange} mode={mode} options={['+', '-']} />
-                  <InputField label="Silicate Solubilization" name="silicateSolubilization" value={formData.silicateSolubilization} onChange={handleChange} mode={mode} options={['+', '-']} />
-                  <ConditionalInputField label="IAA Production" name="iaaProduction" yesNoName="iaaProductionYesNo" formData={formData} setFormData={setFormData} handleChange={handleChange} quantityLabel="Quantity (µg/ml)" />
-                  <InputField label="GA3 Production" name="ga3Production" value={formData.ga3Production} onChange={handleChange} mode={mode} />
-                  <InputField label="Cytokinin Production" name="cytokininProduction" value={formData.cytokininProduction} onChange={handleChange} mode={mode} />
-                  <InputField label="ACC Deaminase Activity" name="accDeaminaseActivity" value={formData.accDeaminaseActivity} onChange={handleChange} mode={mode} options={['+', '-']} />
-                  <InputField label="Ammonia Production" name="ammoniaProduction" value={formData.ammoniaProduction} onChange={handleChange} mode={mode} options={['+', '-']} />
-                  <InputField label="ROS Scavenging" name="rosScavenging" value={formData.rosScavenging} onChange={handleChange} mode={mode} />
-                  <InputField label="Salt Drought Tolerance" name="saltDroughtTolerance" value={formData.saltDroughtTolerance} onChange={handleChange} mode={mode} />
+                  <ActivityField label="Phosphate Solubilization" name="phosphateSolubilization" zoneName="phosphateSolubilizationZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Potassium Solubilization" name="potassiumSolubilization" zoneName="potassiumSolubilizationZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Nitrogen Fixation" name="nitrogenFixation" zoneName="nitrogenFixationZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Zinc Solubilization" name="zincSolubilization" zoneName="zincSolubilizationZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Iron Mobilization" name="ironMobilization" zoneName="ironMobilizationZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Sulphur Oxidation" name="sulphurOxidation" zoneName="sulphurOxidationZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Silicate Solubilization" name="silicateSolubilization" zoneName="silicateSolubilizationZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="IAA Production" name="iaaProduction" zoneName="iaaProductionZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="GA3 Production" name="ga3Production" zoneName="ga3ProductionZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Cytokinin Production" name="cytokininProduction" zoneName="cytokininProductionZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="ACC Deaminase Activity" name="accDeaminaseActivity" zoneName="accDeaminaseActivityZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Ammonia Production" name="ammoniaProduction" zoneName="ammoniaProductionZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="ROS Scavenging" name="rosScavenging" zoneName="rosScavengingZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Salt Drought Tolerance" name="saltDroughtTolerance" zoneName="saltDroughtToleranceZone" formData={formData} setFormData={setFormData} />
                 </div>
                 <CustomFieldsSection 
                   tabId="pgpr"
@@ -456,8 +489,8 @@ export default function RecordForm({ isOpen, onClose, onSubmit, initialData, mod
             {activeTab === 'antagonistic' && (
               <div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InputField label="Antifungal Activity" name="antifungalActivity" value={formData.antifungalActivity} onChange={handleChange} mode={mode} />
-                  <InputField label="Antibacterial Activity" name="antibacterialActivity" value={formData.antibacterialActivity} onChange={handleChange} mode={mode} />
+                  <ActivityField label="Antifungal Activity" name="antifungalActivity" zoneName="antifungalActivityZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Antibacterial Activity" name="antibacterialActivity" zoneName="antibacterialActivityZone" formData={formData} setFormData={setFormData} />
                 </div>
                 <CustomFieldsSection 
                   tabId="antagonistic"
@@ -472,13 +505,13 @@ export default function RecordForm({ isOpen, onClose, onSubmit, initialData, mod
             {activeTab === 'enzyme' && (
               <div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ConditionalInputField label="Chitinase" name="chitinase" yesNoName="chitinaseYesNo" formData={formData} setFormData={setFormData} handleChange={handleChange} quantityLabel="Quantity (U/ml)" />
-                  <ConditionalInputField label="Glucanase" name="glucanase" yesNoName="glucanaseYesNo" formData={formData} setFormData={setFormData} handleChange={handleChange} quantityLabel="Quantity (U/ml)" />
-                  <ConditionalInputField label="Cellulase" name="cellulase" yesNoName="cellulaseYesNo" formData={formData} setFormData={setFormData} handleChange={handleChange} quantityLabel="Quantity (U/ml)" />
-                  <ConditionalInputField label="Amylase" name="amylase" yesNoName="amylaseYesNo" formData={formData} setFormData={setFormData} handleChange={handleChange} quantityLabel="Quantity (U/ml)" />
-                  <InputField label="Protease" name="protease" value={formData.protease} onChange={handleChange} mode={mode} options={['+', '-']} />
-                  <ConditionalInputField label="Lipase" name="lipase" yesNoName="lipaseYesNo" formData={formData} setFormData={setFormData} handleChange={handleChange} quantityLabel="Quantity (U/ml)" />
-                  <ConditionalInputField label="Phytase" name="phytase" yesNoName="phytaseYesNo" formData={formData} setFormData={setFormData} handleChange={handleChange} quantityLabel="Quantity (U/ml)" />
+                  <ActivityField label="Chitinase" name="chitinase" zoneName="chitinaseZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Glucanase" name="glucanase" zoneName="glucanaseZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Cellulase" name="cellulase" zoneName="cellulaseZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Amylase" name="amylase" zoneName="amylaseZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Protease" name="protease" zoneName="proteaseZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Lipase" name="lipase" zoneName="lipaseZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Phytase" name="phytase" zoneName="phytaseZone" formData={formData} setFormData={setFormData} />
                 </div>
                 <CustomFieldsSection 
                   tabId="enzyme"
@@ -493,9 +526,9 @@ export default function RecordForm({ isOpen, onClose, onSubmit, initialData, mod
             {activeTab === 'other' && (
               <div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ConditionalInputField label="VOC Production" name="vocProduction" yesNoName="vocProductionYesNo" formData={formData} setFormData={setFormData} handleChange={handleChange} quantityLabel="Quantity (µg/ml)" />
-                  <ConditionalInputField label="Biofilm Formation" name="biofilmFormation" yesNoName="biofilmFormationYesNo" formData={formData} setFormData={setFormData} handleChange={handleChange} quantityLabel="Quantity (µg/ml)" />
-                  <ConditionalInputField label="EPS" name="eps" yesNoName="epsYesNo" formData={formData} setFormData={setFormData} handleChange={handleChange} quantityLabel="Quantity (µg/ml)" />
+                  <ActivityField label="VOC Production" name="vocProduction" zoneName="vocProductionZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="Biofilm Formation" name="biofilmFormation" zoneName="biofilmFormationZone" formData={formData} setFormData={setFormData} />
+                  <ActivityField label="EPS" name="eps" zoneName="epsZone" formData={formData} setFormData={setFormData} />
                 </div>
                 <CustomFieldsSection 
                   tabId="other"
